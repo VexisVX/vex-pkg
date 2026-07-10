@@ -11,7 +11,7 @@
 
 ## Ultimate Arch Linux Toolkit Installer
 
-VEX-PKG is an all-in-one toolkit that transforms your Arch Linux system with 15 categories, 500+ packages, 10 beautiful themes, and automated configurations for Kitty, Fish, Fastfetch, GNOME, and more.
+VEX-PKG is an all-in-one toolkit that transforms your Arch Linux system with 15 categories, 300+ packages, 10 beautiful themes, and automated configurations for Kitty, Fish, Fastfetch, GNOME, and more.
 
 ---
 
@@ -26,7 +26,7 @@ VEX-PKG is an all-in-one toolkit that transforms your Arch Linux system with 15 
 | Desktop | 16 | GNOME environment |
 | Development | 29 | Programming tools |
 | Pentest-Light | 40 | Essential security tools |
-| Pentest-Pro | 500+ | Advanced security toolkit (11 subcategories) |
+| Pentest-Pro | 300+ | Advanced security toolkit (11 subcategories) |
 | Gaming | 11 | Gaming & entertainment |
 | Media | 17 | Multimedia & creative tools |
 | Network | 14 | Networking & communication |
