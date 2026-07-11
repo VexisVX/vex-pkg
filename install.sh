@@ -1261,7 +1261,6 @@ install_configs() {
 EOF
 
 # gnome.sh
-# gnome.sh - نسخه کامل و نهایی
 sudo tee "$VEX_ROOT/lib/modules/gnome.sh" > /dev/null << 'EOF'
 #!/usr/bin/env bash
 # VEX GNOME Module - FULL VALIDATED
