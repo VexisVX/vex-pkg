@@ -1,13 +1,15 @@
 #!/bin/bash
 # ================================================================
-# VEX-PKG Tools Installer - Ultimate Edition v4.0.3
+# VEX-PKG Tools Installer - Ultimate Edition v4.0.4
 # ================================================================
 # Creator: Vexis (https://github.com/VexisVX)
 # ================================================================
 # Features:
 #   - 15 Categories with beautiful tables
 #   - Pentest-Pro with 11 Subcategories
-#   - Theme Gallery (10 themes)
+#   - Theme Gallery (18 themes)
+#   - Fish prompt styles (9 styles)
+#   - Theme management via vex-pkg theme
 #   - Fun Tools (cowsay, figlet, cmatrix...)
 #   - AUR support via yay
 #   - Auto-completion
@@ -34,6 +36,10 @@ NC='\033[0m'
 # Initialize counters
 declare -i ERROR_COUNT=0
 declare -i WARNING_COUNT=0
+
+# Global theme and prompt variables
+SELECTED_THEME="red-white"
+SELECTED_PROMPT="modern"
 
 log_info() { echo -e "${GREEN}[+]${NC} $1"; }
 log_error() { echo -e "${RED}[!]${NC} $1" >&2; ERROR_COUNT+=1; }
@@ -67,14 +73,14 @@ print_logo() {
     echo '               .******+...+***-+***=          .+***=+***+.'
     echo -e "${NC}"
     echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${BOLD}${CYAN}                    VEX-OS TOOLS v4.0${NC}"
+    echo -e "${BOLD}${CYAN}                    VEX-OS TOOLS v4.0.4${NC}"
     echo -e "${BOLD}${CYAN}              Creator: Vexis (github.com/VexisVX)${NC}"
     echo -e "${BOLD}${CYAN}═══════════════════════════════════════════════════════════${NC}"
     echo ""
 }
 
 # ================================================================
-# Theme Palettes (10 themes)
+# Theme Palettes (18 themes)
 # ================================================================
 declare -A THEMES
 
@@ -268,58 +274,234 @@ arrow_color="#f6c177"
 border_color="#26233a"
 '
 
-# ================================================================
-# Select Theme
-# ================================================================
-select_theme() {
-    log_header "🎨 Select Your Theme"
-    echo ""
-    echo -e "${BOLD}Available Themes:${NC}"
-    echo ""
+# New themes
+THEMES["monokai"]='
+background="#272822"
+foreground="#f8f8f2"
+color0="#272822" color8="#75715e"
+color1="#f92672" color9="#f92672"
+color2="#a6e22e" color10="#a6e22e"
+color3="#e6db74" color11="#e6db74"
+color4="#66d9ef" color12="#66d9ef"
+color5="#ae81ff" color13="#ae81ff"
+color6="#a1efe4" color14="#a1efe4"
+color7="#f8f8f2" color15="#f9f8f5"
+user_color="#f92672"
+host_color="#a6e22e"
+path_color="#f8f8f2"
+git_color="#a6e22e"
+arrow_color="#e6db74"
+border_color="#75715e"
+'
 
-    themes_list=(
-        "red-white|❤️  Red & White|Default VEX theme"
-        "cyberpunk|💜 Cyberpunk|   Neon futuristic"
-        "nord|💙 Nord|        Cool and calm"
-        "dracula|💜 Dracula|     Dark and vibrant"
-        "tokyo-night|🌃 Tokyo Night| Neon city lights"
-        "catppuccin|🤎 Catppuccin|  Warm and cozy"
-        "gruvbox|🧡 Gruvbox|     Retro and warm"
-        "solarized|💛 Solarized|   Easy on the eyes"
-        "everforest|🌿 Everforest|  Nature inspired"
-        "rose-pine|🌸 Rose Pine|   Soft and elegant"
-    )
+THEMES["one-dark"]='
+background="#282c34"
+foreground="#abb2bf"
+color0="#282c34" color8="#5c6370"
+color1="#e06c75" color9="#e06c75"
+color2="#98c379" color10="#98c379"
+color3="#e5c07b" color11="#e5c07b"
+color4="#61afef" color12="#61afef"
+color5="#c678dd" color13="#c678dd"
+color6="#56b6c2" color14="#56b6c2"
+color7="#abb2bf" color15="#ffffff"
+user_color="#e06c75"
+host_color="#61afef"
+path_color="#abb2bf"
+git_color="#98c379"
+arrow_color="#e5c07b"
+border_color="#5c6370"
+'
 
-    i=1
-    for theme in "${themes_list[@]}"; do
-        IFS='|' read -r name icon desc <<< "$theme"
-        printf "  ${GREEN}%2d)${NC} ${icon} ${BOLD}%-15s${NC} %s\n" "$i" "$name" "$desc"
-        i=$((i + 1))
-    done
+THEMES["palenight"]='
+background="#292d3e"
+foreground="#d0d0d0"
+color0="#292d3e" color8="#676e95"
+color1="#f07178" color9="#f07178"
+color2="#c3e88d" color10="#c3e88d"
+color3="#ffcb6b" color11="#ffcb6b"
+color4="#82aaff" color12="#82aaff"
+color5="#c792ea" color13="#c792ea"
+color6="#89ddff" color14="#89ddff"
+color7="#d0d0d0" color15="#ffffff"
+user_color="#c792ea"
+host_color="#82aaff"
+path_color="#d0d0d0"
+git_color="#c3e88d"
+arrow_color="#ffcb6b"
+border_color="#676e95"
+'
 
-    echo ""
-    read -p "$(echo -e "${YELLOW}Select theme [1-10] (default: 1): ${NC}")" theme_choice
+THEMES["synthwave"]='
+background="#241b30"
+foreground="#f92aad"
+color0="#241b30" color8="#4a3b5c"
+color1="#f92aad" color9="#f92aad"
+color2="#f59762" color10="#f59762"
+color3="#f9ca24" color11="#f9ca24"
+color4="#36f9f6" color12="#36f9f6"
+color5="#ff0078" color13="#ff0078"
+color6="#f9ca24" color14="#f9ca24"
+color7="#f9f9f9" color15="#ffffff"
+user_color="#f92aad"
+host_color="#36f9f6"
+path_color="#f9f9f9"
+git_color="#f59762"
+arrow_color="#f9ca24"
+border_color="#4a3b5c"
+'
 
-    if [[ -z "$theme_choice" ]]; then
-        theme_choice=1
-    fi
+THEMES["nord-light"]='
+background="#e5e9f0"
+foreground="#2e3440"
+color0="#d8dee9" color8="#4c566a"
+color1="#bf616a" color9="#bf616a"
+color2="#a3be8c" color10="#a3be8c"
+color3="#ebcb8b" color11="#ebcb8b"
+color4="#81a1c1" color12="#81a1c1"
+color5="#b48ead" color13="#b48ead"
+color6="#88c0d0" color14="#88c0d0"
+color7="#eceff4" color15="#2e3440"
+user_color="#81a1c1"
+host_color="#bf616a"
+path_color="#2e3440"
+git_color="#a3be8c"
+arrow_color="#ebcb8b"
+border_color="#4c566a"
+'
 
-    case "$theme_choice" in
-        1) SELECTED_THEME="red-white" ;;
-        2) SELECTED_THEME="cyberpunk" ;;
-        3) SELECTED_THEME="nord" ;;
-        4) SELECTED_THEME="dracula" ;;
-        5) SELECTED_THEME="tokyo-night" ;;
-        6) SELECTED_THEME="catppuccin" ;;
-        7) SELECTED_THEME="gruvbox" ;;
-        8) SELECTED_THEME="solarized" ;;
-        9) SELECTED_THEME="everforest" ;;
-        10) SELECTED_THEME="rose-pine" ;;
-        *) SELECTED_THEME="red-white" ;;
-    esac
+THEMES["carbon"]='
+background="#2a2a2a"
+foreground="#cccccc"
+color0="#2a2a2a" color8="#555555"
+color1="#ff5555" color9="#ff5555"
+color2="#55ff55" color10="#55ff55"
+color3="#ffff55" color11="#ffff55"
+color4="#5555ff" color12="#5555ff"
+color5="#ff55ff" color13="#ff55ff"
+color6="#55ffff" color14="#55ffff"
+color7="#cccccc" color15="#ffffff"
+user_color="#ff5555"
+host_color="#55ffff"
+path_color="#cccccc"
+git_color="#55ff55"
+arrow_color="#ffff55"
+border_color="#555555"
+'
 
-    log_success "Theme selected: $SELECTED_THEME"
-}
+THEMES["kanagawa"]='
+background="#1f1f28"
+foreground="#dcd7ba"
+color0="#1f1f28" color8="#54546d"
+color1="#c34043" color9="#c34043"
+color2="#76946a" color10="#76946a"
+color3="#c0a36e" color11="#c0a36e"
+color4="#7e9cd8" color12="#7e9cd8"
+color5="#957fb8" color13="#957fb8"
+color6="#6a9589" color14="#6a9589"
+color7="#dcd7ba" color15="#dcd7ba"
+user_color="#c34043"
+host_color="#7e9cd8"
+path_color="#dcd7ba"
+git_color="#76946a"
+arrow_color="#c0a36e"
+border_color="#54546d"
+'
+
+THEMES["moonfly"]='
+background="#080808"
+foreground="#b3b3b3"
+color0="#080808" color8="#3a3a3a"
+color1="#ff5454" color9="#ff5454"
+color2="#8cc85f" color10="#8cc85f"
+color3="#e3c78a" color11="#e3c78a"
+color4="#80a0ff" color12="#80a0ff"
+color5="#d183e8" color13="#d183e8"
+color6="#79dacd" color14="#79dacd"
+color7="#b3b3b3" color15="#ffffff"
+user_color="#80a0ff"
+host_color="#d183e8"
+path_color="#b3b3b3"
+git_color="#8cc85f"
+arrow_color="#e3c78a"
+border_color="#3a3a3a"
+'
+
+THEMES["neon-wave"]='
+background="#0a0e1a"
+foreground="#e0e8f0"
+color0="#0a0e1a" color8="#1a2040"
+color1="#ff6b6b" color9="#ff8a8a"
+color2="#51cf66" color10="#69db7c"
+color3="#ffd93d" color11="#ffe066"
+color4="#4dabf7" color12="#74c0fc"
+color5="#cc5de8" color13="#da77f2"
+color6="#22b8cf" color14="#3bc9db"
+color7="#dee2e6" color15="#f1f3f5"
+user_color="#ff6b6b"
+host_color="#4dabf7"
+path_color="#e0e8f0"
+git_color="#51cf66"
+arrow_color="#ffd93d"
+border_color="#1a2040"
+'
+
+THEMES["oceanic"]='
+background="#0b1a2a"
+foreground="#b8d4e3"
+color0="#0b1a2a" color8="#1a3348"
+color1="#e74c6f" color9="#f06292"
+color2="#4db6ac" color10="#80cbc4"
+color3="#ffb74d" color11="#ffcc80"
+color4="#64b5f6" color12="#90caf9"
+color5="#ce93d8" color13="#e1bee7"
+color6="#4dd0e1" color14="#80deea"
+color7="#b8d4e3" color15="#e8f0f8"
+user_color="#e74c6f"
+host_color="#64b5f6"
+path_color="#b8d4e3"
+git_color="#4db6ac"
+arrow_color="#ffb74d"
+border_color="#1a3348"
+'
+
+THEMES["midnight"]='
+background="#0c0c1a"
+foreground="#c8c8e8"
+color0="#0c0c1a" color8="#1a1a3a"
+color1="#f5426c" color9="#f56c8a"
+color2="#42f5a6" color10="#6cf5b8"
+color3="#f5d742" color11="#f5e06c"
+color4="#4287f5" color12="#6ca3f5"
+color5="#b542f5" color13="#c86cf5"
+color6="#42f5e3" color14="#6cf5e8"
+color7="#c8c8e8" color15="#e8e8f8"
+user_color="#f5426c"
+host_color="#4287f5"
+path_color="#c8c8e8"
+git_color="#42f5a6"
+arrow_color="#f5d742"
+border_color="#1a1a3a"
+'
+
+THEMES["sunset"]='
+background="#1a0e0a"
+foreground="#f0d8c8"
+color0="#1a0e0a" color8="#3a1a10"
+color1="#ff6b4a" color9="#ff8a6a"
+color2="#f5a642" color10="#f5b86a"
+color3="#f5d742" color11="#f5e06c"
+color4="#4a8af5" color12="#6aa8f5"
+color5="#c86af5" color13="#d88af5"
+color6="#42d4f5" color14="#6ae0f5"
+color7="#f0d8c8" color15="#f8e8d8"
+user_color="#ff6b4a"
+host_color="#f5a642"
+path_color="#f0d8c8"
+git_color="#4a8af5"
+arrow_color="#f5d742"
+border_color="#3a1a10"
+'
 
 # ================================================================
 # Get theme colors (safe parser, no eval)
@@ -341,15 +523,593 @@ get_theme_colors() {
 }
 
 # ================================================================
+# Generate Fish prompt function based on style
+# ================================================================
+generate_fish_prompt() {
+    local prompt_style="${1:-modern}"
+    local theme_name="${2:-red-white}"
+    
+    # Get theme colors
+    get_theme_colors "$theme_name"
+    
+    # Generate prompt based on selected style
+    case "$prompt_style" in
+        "minimal")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    set_color $color_user
+    echo -n "$user"
+    set_color normal
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color normal
+    echo -n " "
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "classic")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    
+    set -l pwd (prompt_pwd)
+    
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    set_color $color_arrow
+    echo -n "\$ "
+    set_color normal
+end
+EOF
+            ;;
+        "modern")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_git      $git_color
+    set -l color_arrow    $arrow_color
+    set -l color_border   $border_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    # Line 1
+    set_color $color_border
+    echo -n "┌─ "
+    set_color $color_user
+    echo -n "$user"
+    set_color $color_border
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color $color_border
+    echo -n " "
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    
+    # Line 2 - Git info
+    if command -v git &>/dev/null
+        set -l git_branch (git branch --show-current 2>/dev/null)
+        if test -n "$git_branch"
+            set_color $color_border
+            echo -n "├─ "
+            set_color $color_git
+            echo -n "git: $git_branch ✓"
+            echo ""
+        end
+    end
+    
+    # Line 3 - Prompt
+    set_color $color_border
+    echo -n "└─"
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "power")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_git      $git_color
+    set -l color_arrow    $arrow_color
+    set -l color_border   $border_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    # Line 1
+    set_color $color_border
+    echo -n "╭─ "
+    set_color $color_user
+    echo -n "$user"
+    set_color $color_border
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color $color_border
+    echo -n " "
+    set_color $color_path
+    echo -n "$pwd"
+    set_color $color_border
+    echo -n " ["
+    set_color $color_arrow
+    echo -n (date +%H:%M)
+    set_color $color_border
+    echo -n "]"
+    echo ""
+    
+    # Line 2 - Git info
+    if command -v git &>/dev/null
+        set -l git_branch (git branch --show-current 2>/dev/null)
+        if test -n "$git_branch"
+            set_color $color_border
+            echo -n "├─ "
+            set_color $color_git
+            echo -n "git: $git_branch ✓"
+            set -l git_status (git status --porcelain 2>/dev/null | wc -l)
+            if test $git_status -gt 0
+                set_color $color_arrow
+                echo -n " +$git_status"
+            end
+            echo ""
+        end
+    end
+    
+    # Line 3 - Docker
+    if command -v docker &>/dev/null
+        if docker ps 2>/dev/null | grep -q "."
+            set_color $color_border
+            echo -n "├─ "
+            set_color $color_host
+            echo -n "docker: "
+            set_color $color_git
+            echo -n "running"
+            echo ""
+        end
+    end
+    
+    # Line 4 - Prompt
+    set_color $color_border
+    echo -n "╰─"
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "minimalist")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    
+    set -l pwd (prompt_pwd)
+    
+    set_color $color_arrow
+    echo -n "$prompt_symbol "
+    set_color $color_path
+    echo -n "$pwd"
+    echo -n " "
+    set_color normal
+end
+EOF
+            ;;
+        "doubleline")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    set -l color_border   $border_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    # Line 1
+    set_color $color_border
+    echo -n "╭──"
+    set_color $color_user
+    echo -n "$user"
+    set_color $color_border
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color $color_border
+    echo -n " ── "
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    
+    # Line 2
+    set_color $color_border
+    echo -n "╰──"
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "bracket")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    set -l color_border   $border_color
+    
+    set -l pwd (prompt_pwd)
+    
+    set_color $color_border
+    echo -n "["
+    set_color $color_path
+    echo -n "$pwd"
+    set_color $color_border
+    echo -n "]"
+    echo ""
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "arrow")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_arrow    $arrow_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    set_color $color_user
+    echo -n "$user"
+    set_color normal
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color normal
+    echo -n " "
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+        "boxed")
+            cat << 'EOF'
+function fish_prompt
+    set -l color_user     $user_color
+    set -l color_host     $host_color
+    set -l color_path     $path_color
+    set -l color_git      $git_color
+    set -l color_arrow    $arrow_color
+    set -l color_border   $border_color
+    
+    set -l user (whoami)
+    set -l host (uname -n 2>/dev/null; or echo "vx")
+    set -l pwd (prompt_pwd)
+    
+    # Line 1 - User and path
+    set_color $color_border
+    echo -n "┌─ "
+    set_color $color_user
+    echo -n "$user"
+    set_color $color_border
+    echo -n "@"
+    set_color $color_host
+    echo -n "$host"
+    set_color $color_border
+    echo -n " ── "
+    set_color $color_path
+    echo -n "$pwd"
+    echo ""
+    
+    # Line 2 - Git info (if in git repo)
+    if command -v git &>/dev/null
+        set -l git_branch (git branch --show-current 2>/dev/null)
+        if test -n "$git_branch"
+            set_color $color_border
+            echo -n "├─ "
+            set_color $color_git
+            echo -n "git: $git_branch ✓"
+            echo ""
+        end
+    end
+    
+    # Line 3 - Time
+    set_color $color_border
+    echo -n "├─ "
+    set_color $color_arrow
+    date +"time: %H:%M"
+    echo ""
+    
+    # Line 4 - Prompt
+    set_color $color_border
+    echo -n "└─"
+    set_color $color_arrow
+    echo -n " $prompt_symbol "
+    set_color normal
+end
+EOF
+            ;;
+    esac
+}
+
+# ================================================================
+# Select Prompt Symbol
+# ================================================================
+select_prompt_symbol() {
+    log_header "🎯 Select Prompt Symbol"
+    echo ""
+    echo -e "${BOLD}Available Symbols:${NC}"
+    echo ""
+    
+    symbols_list=(
+        "❯|Arrow|Classic arrow"
+        "➜|Arrow Right|Simple arrow"
+        "→|Right Arrow|Minimal arrow"
+        "▶|Play|Play button"
+        "◆|Diamond|Diamond shape"
+        "●|Circle|Filled circle"
+        "★|Star|Star symbol"
+        "⚡|Lightning|Lightning bolt"
+        "❄|Snowflake|Snowflake"
+        "☀|Sun|Sun symbol"
+        "♥|Heart|Heart symbol"
+        "♦|Diamond Suit|Diamond card"
+        "♠|Spade|Spade card"
+        "♣|Club|Club card"
+        "∅|Empty|Empty set"
+        "∞|Infinity|Infinity symbol"
+        "✓|Check|Check mark"
+        "✗|Cross|Cross mark"
+        "⚙|Gear|Gear symbol"
+        "✈|Plane|Airplane"
+        "☁|Cloud|Cloud"
+        "☂|Umbrella|Umbrella"
+        "☕|Coffee|Coffee cup"
+        "⌘|Command|Command symbol"
+        "⌥|Option|Option symbol"
+        "⎋|Escape|Escape symbol"
+        "λ|Lambda|Lambda functional"
+        "»|Double|Double Arrow"
+    )
+    
+    i=1
+    for symbol in "${symbols_list[@]}"; do
+        IFS='|' read -r sym icon desc <<< "$symbol"
+        printf "  ${GREEN}%2d)${NC} ${CYAN}%-4s${NC} %-15s %s\n" "$i" "$sym" "$icon" "$desc"
+        i=$((i + 1))
+    done
+    
+    echo ""
+    read -p "$(echo -e "${YELLOW}Select symbol [1-${#symbols_list[@]}] (default: 1): ${NC}")" symbol_choice
+    
+    if [[ -z "$symbol_choice" ]]; then
+        symbol_choice=1
+    fi
+    
+    local selected_index=$((symbol_choice - 1))
+    if [[ $selected_index -ge 0 ]] && [[ $selected_index -lt ${#symbols_list[@]} ]]; then
+        IFS='|' read -r SELECTED_SYMBOL icon desc <<< "${symbols_list[$selected_index]}"
+    else
+        SELECTED_SYMBOL="❯"
+    fi
+    
+    log_success "Symbol selected: $SELECTED_SYMBOL"
+}
+# ================================================================
+# Select Theme
+# ================================================================
+select_theme() {
+    log_header "🎨 Select Your Theme"
+    echo ""
+    echo -e "${BOLD}Available Themes:${NC}"
+    echo ""
+
+    themes_list=(
+        "red-white|❤️  Red & White|Default VEX theme"
+        "cyberpunk|💜 Cyberpunk|   Neon futuristic"
+        "nord|💙 Nord|        Cool and calm"
+        "dracula|💜 Dracula|     Dark and vibrant"
+        "tokyo-night|🌃 Tokyo Night| Neon city lights"
+        "catppuccin|🤎 Catppuccin|  Warm and cozy"
+        "gruvbox|🧡 Gruvbox|     Retro and warm"
+        "solarized|💛 Solarized|   Easy on the eyes"
+        "everforest|🌿 Everforest|  Nature inspired"
+        "rose-pine|🌸 Rose Pine|   Soft and elegant"
+        "monokai|🎨 Monokai|      Editor favorite"
+        "one-dark|🌙 One Dark|     Atom inspired"
+        "palenight|🌆 Palenight|   Purple dark"
+        "synthwave|🌃 Synthwave|   80s neon nights"
+        "nord-light|☀️ Nord Light|  Light version of Nord"
+        "carbon|⚫ Carbon|       Professional dark"
+        "kanagawa|🗻 Kanagawa|    Japanese art inspired"
+        "moonfly|🚀 Moonfly|     Blue-purple dark"
+        "neon-wave|🌊 Neon Wave|   Vibrant neon colors"
+        "oceanic|🌊 Oceanic|     Deep ocean blues"
+        "midnight|🌙 Midnight|    Dark purple night"
+        "sunset|🌅 Sunset|       Warm sunset colors"
+    )
+
+    i=1
+    for theme in "${themes_list[@]}"; do
+        IFS='|' read -r name icon desc <<< "$theme"
+        printf "  ${GREEN}%2d)${NC} ${icon} ${BOLD}%-15s${NC} %s\n" "$i" "$name" "$desc"
+        i=$((i + 1))
+    done
+
+    echo ""
+    read -p "$(echo -e "${YELLOW}Select theme [1-18] (default: 1): ${NC}")" theme_choice
+
+    if [[ -z "$theme_choice" ]]; then
+        theme_choice=1
+    fi
+
+    case "$theme_choice" in
+        1) SELECTED_THEME="red-white" ;;
+        2) SELECTED_THEME="cyberpunk" ;;
+        3) SELECTED_THEME="nord" ;;
+        4) SELECTED_THEME="dracula" ;;
+        5) SELECTED_THEME="tokyo-night" ;;
+        6) SELECTED_THEME="catppuccin" ;;
+        7) SELECTED_THEME="gruvbox" ;;
+        8) SELECTED_THEME="solarized" ;;
+        9) SELECTED_THEME="everforest" ;;
+        10) SELECTED_THEME="rose-pine" ;;
+        11) SELECTED_THEME="monokai" ;;
+        12) SELECTED_THEME="one-dark" ;;
+        13) SELECTED_THEME="palenight" ;;
+        14) SELECTED_THEME="synthwave" ;;
+        15) SELECTED_THEME="nord-light" ;;
+        16) SELECTED_THEME="carbon" ;;
+        17) SELECTED_THEME="kanagawa" ;;
+        18) SELECTED_THEME="moonfly" ;;
+        19) SELECTED_THEME="neon-wave" ;;
+        20) SELECTED_THEME="oceanic" ;;
+        21) SELECTED_THEME="midnight" ;;
+        22) SELECTED_THEME="sunset" ;;
+        *) SELECTED_THEME="red-white" ;;
+    esac
+
+    log_success "Theme selected: $SELECTED_THEME"
+}
+
+# ================================================================
+# Select Prompt Style
+# ================================================================
+select_prompt_style() {
+    log_header "🎨 Select Fish Prompt Style"
+    echo ""
+    echo -e "${BOLD}Available Prompt Styles:${NC}"
+    echo ""
+    echo "  ┌──────────────────────────────────────────────────────────┐"
+    echo "  │ 1 │ Minimal        │ user@host ~/path                    │"
+    echo "  │   │                │ ❯                                   │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 2 │ Classic        │  ~/path                             │"
+    echo "  │   │                │  $                                  │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 3 │ Modern         │ ┌─ user@host ~/path                 │"
+    echo "  │   │                │ ├─ git: main ✓                      │"
+    echo "  │   │                │ └─ ❯                                │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 4 │ Power          │ ╭─ user@host ~/path [14:23]         │"
+    echo "  │   │                │ ├─ git: main ✓ +3                   │"
+    echo "  │   │                │ ├─ docker: running                  │"
+    echo "  │   │                │ ╰─ ❯                                │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 5 │ Minimalist     │ ➜ ~/path                            │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 6 │ DoubleLine     │ ╭──user@host ── ~/path              │"
+    echo "  │   │                │ ╰──❯                                │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 7 │ Bracket        │ [~/path]                            │"
+    echo "  │   │                │ ❯                                   │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 8 │ Arrow          │ user@host ~/path                    │"
+    echo "  │   │                │ →                                   │"
+    echo "  ├──────────────────────────────────────────────────────────┤"
+    echo "  │ 9 │ Boxed          │ ┌─ user@host ── ~/path              │"
+    echo "  │   │                │ ├─ git: main ✓                      │"
+    echo "  │   │                │ ├─ time: 14:23                      │"
+    echo "  │   │                │ └─ ❯                                │"
+    echo "  └──────────────────────────────────────────────────────────┘"
+    echo ""
+    
+    prompt_styles=(
+        "minimal|Minimal|Simple user@host path"
+        "classic|Classic|Classic \$ prompt"
+        "modern|Modern|Modern with git info"
+        "power|Power|Power user with all info"
+        "minimalist|Minimalist|Minimal arrow prompt"
+        "doubleline|DoubleLine|Double line with border"
+        "bracket|Bracket|Path in brackets"
+        "arrow|Arrow|Arrow prompt without user@host"
+        "boxed|Boxed|Boxed style with git and time"
+    )
+    
+    i=1
+    for style in "${prompt_styles[@]}"; do
+        IFS='|' read -r name icon desc <<< "$style"
+        printf "  ${GREEN}%2d)${NC} ${BOLD}%-12s${NC} %s\n" "$i" "$name" "$desc"
+        i=$((i + 1))
+    done
+    
+    echo ""
+    read -p "$(echo -e "${YELLOW}Select prompt style [1-9] (default: 3): ${NC}")" prompt_choice
+    
+    if [[ -z "$prompt_choice" ]]; then
+        prompt_choice=3
+    fi
+    
+    case "$prompt_choice" in
+        1) SELECTED_PROMPT="minimal" ;;
+        2) SELECTED_PROMPT="classic" ;;
+        3) SELECTED_PROMPT="modern" ;;
+        4) SELECTED_PROMPT="power" ;;
+        5) SELECTED_PROMPT="minimalist" ;;
+        6) SELECTED_PROMPT="doubleline" ;;
+        7) SELECTED_PROMPT="bracket" ;;
+        8) SELECTED_PROMPT="arrow" ;;
+        9) SELECTED_PROMPT="boxed" ;;
+        *) SELECTED_PROMPT="modern" ;;
+    esac
+    
+    log_success "Prompt style selected: $SELECTED_PROMPT"
+}
+
+# ================================================================
 # Apply theme to configs
 # ================================================================
 apply_theme_to_configs() {
-    theme_name="$1"
+    local theme_name="$1"
+    local prompt_style="${2:-$SELECTED_PROMPT}"
+    local prompt_symbol="${3:-$SELECTED_SYMBOL}"
+    
+    if [[ -z "$theme_name" ]]; then
+        theme_name="red-white"
+    fi
+    
     get_theme_colors "$theme_name"
-
+    
     log_header "🎨 Applying theme: $theme_name"
-
-    # Kitty
+    
+    # Kitty config
     sudo tee "$VEX_ROOT/config/kitty/kitty.conf" > /dev/null << EOF
 # VEX-OS Kitty Terminal - Theme: $theme_name
 background_opacity 0.88
@@ -405,12 +1165,15 @@ url_style curly
 open_url_modifiers ctrl+shift
 EOF
 
-    # Fish
+    # Fish with selected prompt style and symbol
+    local prompt_func=$(generate_fish_prompt "$prompt_style" "$theme_name" | sed "s/\$prompt_symbol/$prompt_symbol/g")
+    
     sudo tee "$VEX_ROOT/config/fish/config.fish" > /dev/null << EOF
 # VEX-OS Fish Config - Theme: $theme_name
 set -gx EDITOR nvim
 set -gx BROWSER firefox
 set -gx TERMINAL kitty
+
 alias ll='ls -lah'
 alias la='ls -A'
 alias l='ls -l'
@@ -422,57 +1185,55 @@ alias install='sudo pacman -S'
 alias remove='sudo pacman -Rns'
 alias search='pacman -Ss'
 alias clean='sudo pacman -Scc'
+
 set -g fish_greeting
-function fish_prompt
-    set -l color_user     $user_color
-    set -l color_host     $host_color
-    set -l color_path     $path_color
-    set -l color_git      $git_color
-    set -l color_arrow    $arrow_color
-    set -l color_border   $border_color
-    set -l user (whoami)
-    set -l host (uname -n 2>/dev/null; or echo "vx")
-    set -l pwd (prompt_pwd)
-    set_color \$color_border
-    echo -n "╭──"
-    set_color \$color_user
-    echo -n "\$user"
-    set_color \$color_border
-    echo -n "@"
-    set_color \$color_host
-    echo -n "\$host"
-    set_color \$color_border
-    echo -n " ── "
-    set_color \$color_path
-    echo -n "\$pwd"
-    echo ""
-    set_color \$color_border
-    echo -n "╰──"
-    set_color \$color_arrow
-    echo -n "❯ "
-    set_color normal
-end
+
+# Color definitions
+set -l color_user     $user_color
+set -l color_host     $host_color
+set -l color_path     $path_color
+set -l color_git      $git_color
+set -l color_arrow    $arrow_color
+set -l color_border   $border_color
+
+$prompt_func
+
 if command -v fastfetch &>/dev/null
     fastfetch
 end
+
 setxkbmap ir 2>/dev/null
 EOF
 
-    # Fastfetch
+    # Fastfetch config
     sudo tee "$VEX_ROOT/config/fastfetch/config.jsonc" > /dev/null << EOF
 {
   "logo": {
     "type": "file",
     "source": "/usr/share/vex/config/fastfetch/logo.txt",
     "padding": { "right": 4 },
-    "color": { "1": "$user_color", "2": "$foreground" }
+    "color": {
+      "1": "$user_color",
+      "2": "$host_color",
+      "3": "$path_color",
+      "4": "$color1",
+      "5": "$color9",
+      "6": "$color4",
+      "7": "$color12",
+      "8": "$color5",
+      "9": "$color13"
+    }
   },
   "display": {
     "separator": " ",
-    "color": { "keys": "$arrow_color", "title": "$foreground", "values": "$foreground" }
+    "color": {
+      "keys": "$arrow_color",
+      "title": "$foreground",
+      "values": "$foreground"
+    }
   },
   "modules": [
-    {"key": "╭───────────╮", "type": "custom", "color": "$border_color"},
+    {"key": "╭───────────╮", "type": "custom"},
     {"key": "│  user    │", "type": "title", "format": "{user-name}", "color": "$user_color"},
     {"key": "│ 󰇅 hname   │", "type": "title", "format": "{host-name}", "color": "$host_color"},
     {"key": "│ 󰅐 uptime  │", "type": "uptime", "keyColor": "$arrow_color", "color": "$foreground"},
@@ -484,14 +1245,90 @@ EOF
     {"key": "│ 󰍛 cpu     │", "type": "cpu", "showPeCoreCount": true, "keyColor": "$arrow_color", "color": "$foreground"},
     {"key": "│ 󰉉 disk    │", "type": "disk", "folders": "/", "keyColor": "$arrow_color", "color": "$foreground"},
     {"key": "│ 󰑭 memory  │", "type": "memory", "keyColor": "$arrow_color", "color": "$foreground"},
-    {"key": "├───────────┤", "type": "custom", "color": "$border_color"},
+    {"key": "├───────────┤", "type": "custom"},
     {"key": "│ ● colors  │", "type": "colors", "symbol": "circle", "keyColor": "$arrow_color"},
-    {"key": "╰───────────╯", "type": "custom", "color": "$border_color"}
+    {"key": "╰───────────╯", "type": "custom"}
   ]
 }
 EOF
 
-    log_success "Theme $theme_name applied to all configs"
+    # VEX logo for fastfetch
+    sudo tee "$VEX_ROOT/config/fastfetch/logo.txt" > /dev/null << 'EOF'
+-@@@@=%@@@*.             =@@@@=@@@@=.      .#@@@#+@@@@:
+ -@@@@=@@@@+           :*.-@@@@+%@@@+     :%@@@+%@@@*.
+ .+@@@@+@@@@-          *@%:.%@@@*#@@@#.  -@@@@=@@@@=.
+  .%@@@#+@@@%.        +@@@@:.%@@@#*@@@%.=@@@%+@@@@:.
+   .%@@@#*@@@#.     .=@@@@%@+.+@@@@+@@**@@@**@@@#..
+    :@@@@*%@@@+.    .@@@@=@@@*.-@@@@=+%@@@+%@@@+.
+    .=@@@@-@@@@-   .@@@@=@@@@*. :%@@@@@@%-@@@@:..
+      +@@@@=@@@@: .*@@@*%@@@#..  .#@@@@#*@@@%:
+      .*@@@%*@@@%.=@@@#+@@@@:.  ..@@@@@@+@@@@:
+       .@@@@*#@@@=@@@%+@@@@:    :@@@@@@@@=@@@@=
+        .@@@@+%@+@@@@+@@@@=.  .=@@@%++%@@@+%@@@+.
+         -@@@@++#@@@-%@@@*..  *@@@#+@@+%@@@+#@@@%.
+         .+@@@%#@@@+%@@@#.  :%@@@+%@@@+.*@@@#*@@@%:
+           *@@@@@@#*@@@%:  :@@@@=%@@@=.  *@@@%=@@@@-.
+           .#@@@@@@+@@@:..+@@@%+@@@@:     =@@@@+@@@@+
+            :@@@@@@%=@-..*@@@**@@@%:.      -@@@@=#@@@#.
+             .******+...+***-+***=          .+***=+***+.
+EOF
+
+    # Copy to user home
+    if [[ -n "$REAL_HOME" ]] && [[ -d "$REAL_HOME" ]]; then
+        if command -v fish &>/dev/null; then
+            sudo mkdir -p "$REAL_HOME/.config/fish" 2>/dev/null || true
+            sudo cp "$CONFIGS_DIR/fish/config.fish" "$REAL_HOME/.config/fish/" 2>/dev/null || true
+            sudo chown -R "$REAL_USER:$REAL_USER" "$REAL_HOME/.config/fish" 2>/dev/null || true
+        fi
+        if command -v kitty &>/dev/null; then
+            sudo mkdir -p "$REAL_HOME/.config/kitty" 2>/dev/null || true
+            sudo cp "$CONFIGS_DIR/kitty/kitty.conf" "$REAL_HOME/.config/kitty/" 2>/dev/null || true
+            sudo chown -R "$REAL_USER:$REAL_USER" "$REAL_HOME/.config/kitty" 2>/dev/null || true
+        fi
+        if command -v fastfetch &>/dev/null; then
+            sudo mkdir -p "$REAL_HOME/.config/fastfetch" 2>/dev/null || true
+            sudo cp "$CONFIGS_DIR/fastfetch/config.jsonc" "$REAL_HOME/.config/fastfetch/" 2>/dev/null || true
+            sudo cp "$CONFIGS_DIR/fastfetch/logo.txt" "$REAL_HOME/.config/fastfetch/" 2>/dev/null || true
+            sudo chown -R "$REAL_USER:$REAL_USER" "$REAL_HOME/.config/fastfetch" 2>/dev/null || true
+        fi
+    fi
+
+    log_success "Theme $theme_name with prompt style $prompt_style and symbol $prompt_symbol applied"
+}
+
+
+# ================================================================
+# Change theme via vex-pkg theme command
+# ================================================================
+change_theme() {
+    local theme_name="$1"
+    local prompt_style="${2:-$SELECTED_PROMPT}"
+    
+    if [[ -z "$theme_name" ]]; then
+        log_error "Usage: vex-pkg theme <theme_name> [prompt_style]"
+        log_info "Themes: red-white, cyberpunk, nord, dracula, tokyo-night, catppuccin, gruvbox, solarized, everforest, rose-pine, monokai, one-dark, palenight, synthwave, nord-light, carbon, kanagawa, moonfly, neon-wave, oceanic, midnight, sunset"
+        log_info "Prompt styles: minimal, classic, modern, power, minimalist, doubleline, bracket, arrow, boxed"
+        return 1
+    fi
+    
+    if [[ -z "${THEMES[$theme_name]:-}" ]]; then
+        log_error "Theme '$theme_name' not found"
+        return 1
+    fi
+    
+    SELECTED_THEME="$theme_name"
+    if [[ -n "$prompt_style" ]]; then
+        SELECTED_PROMPT="$prompt_style"
+    fi
+    
+    apply_theme_to_configs "$SELECTED_THEME" "$SELECTED_PROMPT" "$SELECTED_SYMBOL"
+    
+    echo "$SELECTED_THEME" > "$VEX_ROOT/config/selected_theme"
+    echo "$SELECTED_PROMPT" > "$VEX_ROOT/config/selected_prompt"
+    echo "$SELECTED_SYMBOL" > "$VEX_ROOT/config/selected_symbol"
+
+    log_success "Theme changed to: $theme_name (prompt: $SELECTED_PROMPT)"
+    log_info "Restart your shell or run: exec fish"
 }
 
 # ================================================================
@@ -662,7 +1499,7 @@ fi
 
 print_logo
 
-log_header "🚀 Installing VEX Tools v4.0"
+log_header "🚀 Installing VEX Tools v4.0.4"
 log_info "Distribution: $(grep "^NAME=" /etc/os-release 2>/dev/null | cut -d'"' -f2 || echo "Unknown")"
 log_info "Kernel: $(uname -r)"
 
@@ -714,21 +1551,20 @@ log_success "VEX directories created"
 # ================================================================
 log_header "📚 Creating Core Files"
 
-# config.sh
+# config.sh - unchanged, same as before
 sudo tee "$VEX_ROOT/lib/core/config.sh" > /dev/null << 'EOF'
 #!/usr/bin/env bash
 # VEX Core Config
-readonly VERSION="4.0.0"
-readonly VEX_ROOT="/usr/share/vex"
-readonly LIB_DIR="${VEX_ROOT}/lib"
-readonly CORE_DIR="${LIB_DIR}/core"
-readonly MODULES_DIR="${LIB_DIR}/modules"
-readonly CONFIGS_DIR="${VEX_ROOT}/config"
-readonly PKG_LISTS="${VEX_ROOT}/packages-lists"
-readonly LOG_DIR="/var/log/vex"
-readonly REAL_USER="${SUDO_USER:-$(whoami)}"
-readonly REAL_HOME=$(eval echo ~"$REAL_USER")
-readonly LOG_FILE="${LOG_DIR}/vex-$(date +%Y%m%d-%H%M%S).log"
+readonly VERSION="4.0.4"
+VEX_ROOT="/usr/share/vex"
+LIB_DIR="${VEX_ROOT}/lib"
+CORE_DIR="${LIB_DIR}/core"
+MODULES_DIR="${LIB_DIR}/modules"
+CONFIGS_DIR="${VEX_ROOT}/config"
+PKG_LISTS="${VEX_ROOT}/packages-lists"
+LOG_DIR="/var/log/vex"
+REAL_USER="${SUDO_USER:-$(whoami)}"
+REAL_HOME=$(eval echo ~"$REAL_USER")
 
 export ERROR_COUNT=${ERROR_COUNT:-0}
 export WARNING_COUNT=${WARNING_COUNT:-0}
@@ -1183,6 +2019,418 @@ cmd_cleanup() {
 EOF
 
 log_success "Core files created"
+
+# ================================================================
+# CREATE THEME.SH - Complete file for /usr/share/vex/lib/core/theme.sh
+# ================================================================
+# Copy this ENTIRE block and paste it in your installer where
+# core files are created (after package.sh, around line 1750)
+# ================================================================
+
+log_info "Creating theme.sh with all 22 themes and functions..."
+
+sudo tee "$VEX_ROOT/lib/core/theme.sh" > /dev/null << 'THEMESTART'
+#!/usr/bin/env bash
+# VEX Theme Core - 22 Themes + Prompt Styles + Apply Functions
+
+# ================================================================
+# 22 Theme Palettes
+# ================================================================
+declare -A THEMES
+
+THEMES["red-white"]='background="#1a1414" foreground="#e8d5d5" color0="#2a1a1a" color8="#4a2a2a" color1="#c46a6a" color9="#d48a7a" color2="#8a9a7a" color10="#9aaa8a" color3="#d4b8a8" color11="#e4c8b8" color4="#7a8aa8" color12="#8a9ab8" color5="#b08a9a" color13="#c09aaa" color6="#7a9a8a" color14="#8aaaaa" color7="#d0c0b8" color15="#e8d8d0" user_color="#c46a6a" host_color="#d4b8a8" path_color="#e8d5d5" git_color="#8a9a7a" arrow_color="#d4b8a8" border_color="#6a4a4a"'
+THEMES["cyberpunk"]='background="#0a0a1a" foreground="#00ffff" color0="#0a0a1a" color8="#1a1a3a" color1="#ff00ff" color9="#ff44ff" color2="#00ff00" color10="#44ff44" color3="#ffff00" color11="#ffff44" color4="#0088ff" color12="#44aaff" color5="#ff00aa" color13="#ff44aa" color6="#00ffff" color14="#44ffff" color7="#cccccc" color15="#ffffff" user_color="#ff00ff" host_color="#00ffff" path_color="#0088ff" git_color="#00ff00" arrow_color="#ffff00" border_color="#1a1a3a"'
+THEMES["nord"]='background="#2e3440" foreground="#d8dee9" color0="#3b4252" color8="#4c566a" color1="#bf616a" color9="#d08770" color2="#a3be8c" color10="#b48ead" color3="#ebcb8b" color11="#88c0d0" color4="#81a1c1" color12="#5e81ac" color5="#b48ead" color13="#d08770" color6="#88c0d0" color14="#8fbcbb" color7="#e5e9f0" color15="#eceff4" user_color="#88c0d0" host_color="#81a1c1" path_color="#d8dee9" git_color="#a3be8c" arrow_color="#ebcb8b" border_color="#4c566a"'
+THEMES["dracula"]='background="#282a36" foreground="#f8f8f2" color0="#21222c" color8="#44475a" color1="#ff5555" color9="#ff5555" color2="#50fa7b" color10="#50fa7b" color3="#f1fa8c" color11="#f1fa8c" color4="#bd93f9" color12="#bd93f9" color5="#ff79c6" color13="#ff79c6" color6="#8be9fd" color14="#8be9fd" color7="#f8f8f2" color15="#ffffff" user_color="#bd93f9" host_color="#ff79c6" path_color="#f8f8f2" git_color="#50fa7b" arrow_color="#f1fa8c" border_color="#44475a"'
+THEMES["tokyo-night"]='background="#1a1b26" foreground="#c0caf5" color0="#1a1b26" color8="#414868" color1="#f7768e" color9="#f7768e" color2="#9ece6a" color10="#9ece6a" color3="#e0af68" color11="#e0af68" color4="#7aa2f7" color12="#7aa2f7" color5="#bb9af7" color13="#bb9af7" color6="#7dcfff" color14="#7dcfff" color7="#c0caf5" color15="#ffffff" user_color="#7aa2f7" host_color="#bb9af7" path_color="#c0caf5" git_color="#9ece6a" arrow_color="#e0af68" border_color="#414868"'
+THEMES["catppuccin"]='background="#1e1e2e" foreground="#cdd6f4" color0="#1e1e2e" color8="#313244" color1="#f38ba8" color9="#f38ba8" color2="#a6e3a1" color10="#a6e3a1" color3="#f9e2af" color11="#f9e2af" color4="#89b4fa" color12="#89b4fa" color5="#cba6f7" color13="#cba6f7" color6="#94e2d5" color14="#94e2d5" color7="#cdd6f4" color15="#ffffff" user_color="#cba6f7" host_color="#89b4fa" path_color="#cdd6f4" git_color="#a6e3a1" arrow_color="#f9e2af" border_color="#313244"'
+THEMES["gruvbox"]='background="#282828" foreground="#ebdbb2" color0="#282828" color8="#928374" color1="#cc241d" color9="#fb4934" color2="#98971a" color10="#b8bb26" color3="#d79921" color11="#fabd2f" color4="#458588" color12="#83a598" color5="#b16286" color13="#d3869b" color6="#689d6a" color14="#8ec07c" color7="#a89984" color15="#ebdbb2" user_color="#fb4934" host_color="#fabd2f" path_color="#ebdbb2" git_color="#b8bb26" arrow_color="#83a598" border_color="#928374"'
+THEMES["solarized"]='background="#002b36" foreground="#839496" color0="#073642" color8="#002b36" color1="#dc322f" color9="#cb4b16" color2="#859900" color10="#586e75" color3="#b58900" color11="#657b83" color4="#268bd2" color12="#839496" color5="#6c71c4" color13="#6c71c4" color6="#2aa198" color14="#93a1a1" color7="#93a1a1" color15="#fdf6e3" user_color="#268bd2" host_color="#b58900" path_color="#839496" git_color="#859900" arrow_color="#dc322f" border_color="#073642"'
+THEMES["everforest"]='background="#2d353b" foreground="#d3c6aa" color0="#232a2e" color8="#343f44" color1="#e67e80" color9="#e67e80" color2="#a7c080" color10="#a7c080" color3="#dbbc7f" color11="#dbbc7f" color4="#7fbbb3" color12="#7fbbb3" color5="#d699b6" color13="#d699b6" color6="#83c092" color14="#83c092" color7="#d3c6aa" color15="#d3c6aa" user_color="#d699b6" host_color="#7fbbb3" path_color="#d3c6aa" git_color="#a7c080" arrow_color="#dbbc7f" border_color="#343f44"'
+THEMES["rose-pine"]='background="#191724" foreground="#e0def4" color0="#191724" color8="#26233a" color1="#eb6f92" color9="#eb6f92" color2="#31748f" color10="#31748f" color3="#f6c177" color11="#f6c177" color4="#9ccfd8" color12="#9ccfd8" color5="#c4a7e7" color13="#c4a7e7" color6="#ebbcba" color14="#ebbcba" color7="#e0def4" color15="#e0def4" user_color="#c4a7e7" host_color="#9ccfd8" path_color="#e0def4" git_color="#31748f" arrow_color="#f6c177" border_color="#26233a"'
+THEMES["monokai"]='background="#272822" foreground="#f8f8f2" color0="#272822" color8="#75715e" color1="#f92672" color9="#f92672" color2="#a6e22e" color10="#a6e22e" color3="#e6db74" color11="#e6db74" color4="#66d9ef" color12="#66d9ef" color5="#ae81ff" color13="#ae81ff" color6="#a1efe4" color14="#a1efe4" color7="#f8f8f2" color15="#f9f8f5" user_color="#f92672" host_color="#a6e22e" path_color="#f8f8f2" git_color="#a6e22e" arrow_color="#e6db74" border_color="#75715e"'
+THEMES["one-dark"]='background="#282c34" foreground="#abb2bf" color0="#282c34" color8="#5c6370" color1="#e06c75" color9="#e06c75" color2="#98c379" color10="#98c379" color3="#e5c07b" color11="#e5c07b" color4="#61afef" color12="#61afef" color5="#c678dd" color13="#c678dd" color6="#56b6c2" color14="#56b6c2" color7="#abb2bf" color15="#ffffff" user_color="#e06c75" host_color="#61afef" path_color="#abb2bf" git_color="#98c379" arrow_color="#e5c07b" border_color="#5c6370"'
+THEMES["palenight"]='background="#292d3e" foreground="#d0d0d0" color0="#292d3e" color8="#676e95" color1="#f07178" color9="#f07178" color2="#c3e88d" color10="#c3e88d" color3="#ffcb6b" color11="#ffcb6b" color4="#82aaff" color12="#82aaff" color5="#c792ea" color13="#c792ea" color6="#89ddff" color14="#89ddff" color7="#d0d0d0" color15="#ffffff" user_color="#c792ea" host_color="#82aaff" path_color="#d0d0d0" git_color="#c3e88d" arrow_color="#ffcb6b" border_color="#676e95"'
+THEMES["synthwave"]='background="#241b30" foreground="#f92aad" color0="#241b30" color8="#4a3b5c" color1="#f92aad" color9="#f92aad" color2="#f59762" color10="#f59762" color3="#f9ca24" color11="#f9ca24" color4="#36f9f6" color12="#36f9f6" color5="#ff0078" color13="#ff0078" color6="#f9ca24" color14="#f9ca24" color7="#f9f9f9" color15="#ffffff" user_color="#f92aad" host_color="#36f9f6" path_color="#f9f9f9" git_color="#f59762" arrow_color="#f9ca24" border_color="#4a3b5c"'
+THEMES["nord-light"]='background="#e5e9f0" foreground="#2e3440" color0="#d8dee9" color8="#4c566a" color1="#bf616a" color9="#bf616a" color2="#a3be8c" color10="#a3be8c" color3="#ebcb8b" color11="#ebcb8b" color4="#81a1c1" color12="#81a1c1" color5="#b48ead" color13="#b48ead" color6="#88c0d0" color14="#88c0d0" color7="#eceff4" color15="#2e3440" user_color="#81a1c1" host_color="#bf616a" path_color="#2e3440" git_color="#a3be8c" arrow_color="#ebcb8b" border_color="#4c566a"'
+THEMES["carbon"]='background="#2a2a2a" foreground="#cccccc" color0="#2a2a2a" color8="#555555" color1="#ff5555" color9="#ff5555" color2="#55ff55" color10="#55ff55" color3="#ffff55" color11="#ffff55" color4="#5555ff" color12="#5555ff" color5="#ff55ff" color13="#ff55ff" color6="#55ffff" color14="#55ffff" color7="#cccccc" color15="#ffffff" user_color="#ff5555" host_color="#55ffff" path_color="#cccccc" git_color="#55ff55" arrow_color="#ffff55" border_color="#555555"'
+THEMES["kanagawa"]='background="#1f1f28" foreground="#dcd7ba" color0="#1f1f28" color8="#54546d" color1="#c34043" color9="#c34043" color2="#76946a" color10="#76946a" color3="#c0a36e" color11="#c0a36e" color4="#7e9cd8" color12="#7e9cd8" color5="#957fb8" color13="#957fb8" color6="#6a9589" color14="#6a9589" color7="#dcd7ba" color15="#dcd7ba" user_color="#c34043" host_color="#7e9cd8" path_color="#dcd7ba" git_color="#76946a" arrow_color="#c0a36e" border_color="#54546d"'
+THEMES["moonfly"]='background="#080808" foreground="#b3b3b3" color0="#080808" color8="#3a3a3a" color1="#ff5454" color9="#ff5454" color2="#8cc85f" color10="#8cc85f" color3="#e3c78a" color11="#e3c78a" color4="#80a0ff" color12="#80a0ff" color5="#d183e8" color13="#d183e8" color6="#79dacd" color14="#79dacd" color7="#b3b3b3" color15="#ffffff" user_color="#80a0ff" host_color="#d183e8" path_color="#b3b3b3" git_color="#8cc85f" arrow_color="#e3c78a" border_color="#3a3a3a"'
+THEMES["neon-wave"]='background="#0a0e1a" foreground="#e0e8f0" color0="#0a0e1a" color8="#1a2040" color1="#ff6b6b" color9="#ff8a8a" color2="#51cf66" color10="#69db7c" color3="#ffd93d" color11="#ffe066" color4="#4dabf7" color12="#74c0fc" color5="#cc5de8" color13="#da77f2" color6="#22b8cf" color14="#3bc9db" color7="#dee2e6" color15="#f1f3f5" user_color="#ff6b6b" host_color="#4dabf7" path_color="#e0e8f0" git_color="#51cf66" arrow_color="#ffd93d" border_color="#1a2040"'
+THEMES["oceanic"]='background="#0b1a2a" foreground="#b8d4e3" color0="#0b1a2a" color8="#1a3348" color1="#e74c6f" color9="#f06292" color2="#4db6ac" color10="#80cbc4" color3="#ffb74d" color11="#ffcc80" color4="#64b5f6" color12="#90caf9" color5="#ce93d8" color13="#e1bee7" color6="#4dd0e1" color14="#80deea" color7="#b8d4e3" color15="#e8f0f8" user_color="#e74c6f" host_color="#64b5f6" path_color="#b8d4e3" git_color="#4db6ac" arrow_color="#ffb74d" border_color="#1a3348"'
+THEMES["midnight"]='background="#0c0c1a" foreground="#c8c8e8" color0="#0c0c1a" color8="#1a1a3a" color1="#f5426c" color9="#f56c8a" color2="#42f5a6" color10="#6cf5b8" color3="#f5d742" color11="#f5e06c" color4="#4287f5" color12="#6ca3f5" color5="#b542f5" color13="#c86cf5" color6="#42f5e3" color14="#6cf5e8" color7="#c8c8e8" color15="#e8e8f8" user_color="#f5426c" host_color="#4287f5" path_color="#c8c8e8" git_color="#42f5a6" arrow_color="#f5d742" border_color="#1a1a3a"'
+THEMES["sunset"]='background="#1a0e0a" foreground="#f0d8c8" color0="#1a0e0a" color8="#3a1a10" color1="#ff6b4a" color9="#ff8a6a" color2="#f5a642" color10="#f5b86a" color3="#f5d742" color11="#f5e06c" color4="#4a8af5" color12="#6aa8f5" color5="#c86af5" color13="#d88af5" color6="#42d4f5" color14="#6ae0f5" color7="#f0d8c8" color15="#f8e8d8" user_color="#ff6b4a" host_color="#f5a642" path_color="#f0d8c8" git_color="#4a8af5" arrow_color="#f5d742" border_color="#3a1a10"'
+
+# ================================================================
+# Parse theme colors from string
+# ================================================================
+get_theme_colors() {
+    local theme_name="$1"
+    local theme_data="${THEMES[$theme_name]}"
+    [[ -z "$theme_data" ]] && theme_data="${THEMES["red-white"]}"
+    
+    local line key val
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        while [[ "$line" =~ ^[[:space:]]*([a-zA-Z_][a-zA-Z0-9_]*)=\"([^\"]*)\"[[:space:]]*(.*)$ ]]; do
+            key="${BASH_REMATCH[1]}"
+            val="${BASH_REMATCH[2]}"
+            printf -v "$key" '%s' "$val"
+            line="${BASH_REMATCH[3]}"
+        done
+    done <<< "$theme_data"
+}
+
+# ================================================================
+# Generate Fish prompt function
+# ================================================================
+generate_fish_prompt() {
+    local prompt_style="${1:-modern}"
+    local theme_name="${2:-red-white}"
+    
+    get_theme_colors "$theme_name"
+    
+    case "$prompt_style" in
+        "minimal")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cu; echo -n "\$u"; set_color normal; echo -n "@"
+    set_color \$ch; echo -n "\$h"; set_color normal; echo -n " "
+    set_color \$cp; echo -n "\$p"; echo ""
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "classic")
+            cat << EOF
+function fish_prompt
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l p (prompt_pwd)
+    set_color \$cp; echo -n "\$p"; echo ""
+    set_color \$ca; echo -n "\\\$ "; set_color normal
+end
+EOF
+            ;;
+        "modern")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l cg '${git_color}'
+    set -l ca '${arrow_color}'; set -l cb '${border_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cb; echo -n "┌─ "
+    set_color \$cu; echo -n "\$u"; set_color \$cb; echo -n "@"
+    set_color \$ch; echo -n "\$h"; set_color \$cb; echo -n " "
+    set_color \$cp; echo -n "\$p"; echo ""
+    if command -v git &>/dev/null
+        set -l gb (git branch --show-current 2>/dev/null)
+        if test -n "\$gb"
+            set_color \$cb; echo -n "├─ "
+            set_color \$cg; echo -n "git: \$gb ✓"; echo ""
+        end
+    end
+    set_color \$cb; echo -n "└─"
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "power")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l cg '${git_color}'
+    set -l ca '${arrow_color}'; set -l cb '${border_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cb; echo -n "╭─ "
+    set_color \$cu; echo -n "\$u"; set_color \$cb; echo -n "@"
+    set_color \$ch; echo -n "\$h"; set_color \$cb; echo -n " "
+    set_color \$cp; echo -n "\$p"
+    set_color \$cb; echo -n " ["; set_color \$ca; echo -n (date +%H:%M)
+    set_color \$cb; echo -n "]"; echo ""
+    if command -v git &>/dev/null
+        set -l gb (git branch --show-current 2>/dev/null)
+        if test -n "\$gb"
+            set_color \$cb; echo -n "├─ "
+            set_color \$cg; echo -n "git: \$gb ✓"
+            set -l gs (git status --porcelain 2>/dev/null | wc -l)
+            if test \$gs -gt 0; set_color \$ca; echo -n " +\$gs"; end
+            echo ""
+        end
+    end
+    set_color \$cb; echo -n "╰─"
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "minimalist")
+            cat << EOF
+function fish_prompt
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l p (prompt_pwd)
+    set_color \$ca; echo -n "\${prompt_symbol} "
+    set_color \$cp; echo -n "\$p"; echo -n " "; set_color normal
+end
+EOF
+            ;;
+        "doubleline")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l cb '${border_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cb; echo -n "╭──"
+    set_color \$cu; echo -n "\$u"; set_color \$cb; echo -n "@"
+    set_color \$ch; echo -n "\$h"
+    set_color \$cb; echo -n " ── "; set_color \$cp; echo -n "\$p"; echo ""
+    set_color \$cb; echo -n "╰──"
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "bracket")
+            cat << EOF
+function fish_prompt
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l cb '${border_color}'; set -l p (prompt_pwd)
+    set_color \$cb; echo -n "["; set_color \$cp; echo -n "\$p"
+    set_color \$cb; echo -n "]"; echo ""
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "arrow")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cu; echo -n "\$u"; set_color normal; echo -n "@"
+    set_color \$ch; echo -n "\$h"; set_color normal; echo -n " "
+    set_color \$cp; echo -n "\$p"; echo ""
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        "boxed")
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l cg '${git_color}'
+    set -l ca '${arrow_color}'; set -l cb '${border_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cb; echo -n "┌─ "
+    set_color \$cu; echo -n "\$u"; set_color \$cb; echo -n "@"
+    set_color \$ch; echo -n "\$h"
+    set_color \$cb; echo -n " ── "; set_color \$cp; echo -n "\$p"; echo ""
+    if command -v git &>/dev/null
+        set -l gb (git branch --show-current 2>/dev/null)
+        if test -n "\$gb"
+            set_color \$cb; echo -n "├─ "
+            set_color \$cg; echo -n "git: \$gb ✓"; echo ""
+        end
+    end
+    set_color \$cb; echo -n "├─ "; set_color \$ca; date +"time: %H:%M"; echo ""
+    set_color \$cb; echo -n "└─"
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+        *)
+            cat << EOF
+function fish_prompt
+    set -l cu '${user_color}'; set -l ch '${host_color}'
+    set -l cp '${path_color}'; set -l ca '${arrow_color}'
+    set -l u (whoami); set -l h (uname -n 2>/dev/null; or echo vx)
+    set -l p (prompt_pwd)
+    set_color \$cu; echo -n "\$u"; set_color normal; echo -n "@"
+    set_color \$ch; echo -n "\$h"; set_color normal; echo -n " "
+    set_color \$cp; echo -n "\$p"; echo ""
+    set_color \$ca; echo -n " \${prompt_symbol} "; set_color normal
+end
+EOF
+            ;;
+    esac
+}
+# ================================================================
+# Apply theme to config files
+# ================================================================
+apply_theme_to_configs() {
+    local theme_name="$1"
+    local prompt_style="${2:-modern}"
+    local prompt_symbol="${3:-❯}"
+    
+    [[ -z "$theme_name" ]] && theme_name="red-white"
+    
+    get_theme_colors "$theme_name"
+    
+    CONFIGS_DIR="${VEX_ROOT}/config"
+    REAL_USER="${SUDO_USER:-$(whoami)}"
+    REAL_HOME=$(eval echo ~"$REAL_USER")
+    
+    # Kitty config
+    sudo tee "${CONFIGS_DIR}/kitty/kitty.conf" > /dev/null << KITTYEOF
+background_opacity 0.88
+dynamic_background_opacity yes
+background_blur 8
+window_padding_width 18
+window_padding_height 16
+window_border_width 2
+window_border_color ${border_color}
+active_window_border_color ${user_color}
+inactive_window_border_color ${color8}
+window_rounded_corners 14
+cursor_shape block
+cursor_blink_interval 0
+cursor_text_color ${background}
+cursor_color ${user_color}
+selection_foreground ${background}
+selection_background ${user_color}
+background ${background}
+foreground ${foreground}
+color0 ${color0}
+color8 ${color8}
+color1 ${color1}
+color9 ${color9}
+color2 ${color2}
+color10 ${color10}
+color3 ${color3}
+color11 ${color11}
+color4 ${color4}
+color12 ${color12}
+color5 ${color5}
+color13 ${color13}
+color6 ${color6}
+color14 ${color14}
+color7 ${color7}
+color15 ${color15}
+font_family JetBrainsMono Nerd Font
+font_size 12.5
+adjust_line_height 2
+map ctrl+shift+c copy_to_clipboard
+map ctrl+shift+v paste_from_clipboard
+map ctrl+shift+f toggle_fullscreen
+scrollback_lines 10000
+renderer opengl
+sync_to_monitor no
+enable_audio_bell no
+confirm_os_window_close 0
+strip_trailing_spaces smart
+shell_integration enabled
+mouse_hide_wait 2.0
+url_color ${color3}
+url_style curly
+open_url_modifiers ctrl+shift
+KITTYEOF
+
+    # Generate fish prompt
+    local prompt_func=$(generate_fish_prompt "$prompt_style" "$theme_name" | sed "s|\${prompt_symbol}|${prompt_symbol}|g")
+    
+    # Fish config
+    sudo tee "${CONFIGS_DIR}/fish/config.fish" > /dev/null << FISHEOF
+set -gx EDITOR nvim
+set -gx BROWSER firefox
+set -gx TERMINAL kitty
+alias ll='ls -lah'; alias la='ls -A'; alias l='ls -l'
+alias ..='cd ..'; alias ...='cd ../..'
+alias grep='grep --color=auto'
+alias update='sudo pacman -Syu'; alias install='sudo pacman -S'
+alias remove='sudo pacman -Rns'; alias search='pacman -Ss'
+alias clean='sudo pacman -Scc'
+set -g fish_greeting
+
+${prompt_func}
+
+if command -v fastfetch &>/dev/null
+    fastfetch
+end
+
+setxkbmap ir 2>/dev/null
+FISHEOF
+
+    # Fastfetch config
+    sudo tee "${CONFIGS_DIR}/fastfetch/config.jsonc" > /dev/null << FFEOF
+{
+  "logo": {
+    "type": "file",
+    "source": "/usr/share/vex/config/fastfetch/logo.txt",
+    "padding": { "right": 4 },
+    "color": {
+      "1": "${user_color}",
+      "2": "${host_color}",
+      "3": "${path_color}",
+      "4": "${color1}",
+      "5": "${color9}",
+      "6": "${color4}",
+      "7": "${color12}",
+      "8": "${color5}",
+      "9": "${color13}"
+    }
+  },
+  "display": {
+    "separator": " ",
+    "color": {
+      "keys": "${arrow_color}",
+      "title": "${foreground}",
+      "values": "${foreground}"
+    }
+  },
+  "modules": [
+    {"key": "╭───────────╮", "type": "custom"},
+    {"key": "│  user    │", "type": "title", "format": "{user-name}", "color": "${user_color}"},
+    {"key": "│ 󰇅 hname   │", "type": "title", "format": "{host-name}", "color": "${host_color}"},
+    {"key": "│ 󰅐 uptime  │", "type": "uptime", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│  kernel  │", "type": "kernel", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│ 󰘳 wm      │", "type": "wm", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│ 󰇄 desktop │", "type": "de", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│  term    │", "type": "terminal", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│  shell   │", "type": "shell", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│ 󰍛 cpu     │", "type": "cpu", "showPeCoreCount": true, "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│ 󰉉 disk    │", "type": "disk", "folders": "/", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "│ 󰑭 memory  │", "type": "memory", "keyColor": "${arrow_color}", "color": "${foreground}"},
+    {"key": "├───────────┤", "type": "custom"},
+    {"key": "│ ● colors  │", "type": "colors", "symbol": "circle", "keyColor": "${arrow_color}"},
+    {"key": "╰───────────╯", "type": "custom"}
+  ]
+}
+FFEOF
+
+    # Copy to user home
+    if [[ -n "$REAL_HOME" ]] && [[ -d "$REAL_HOME" ]]; then
+        if command -v fish &>/dev/null; then
+            sudo mkdir -p "${REAL_HOME}/.config/fish" 2>/dev/null || true
+            sudo cp "${CONFIGS_DIR}/fish/config.fish" "${REAL_HOME}/.config/fish/" 2>/dev/null || true
+            sudo chown -R "${REAL_USER}:${REAL_USER}" "${REAL_HOME}/.config/fish" 2>/dev/null || true
+        fi
+        if command -v kitty &>/dev/null; then
+            sudo mkdir -p "${REAL_HOME}/.config/kitty" 2>/dev/null || true
+            sudo cp "${CONFIGS_DIR}/kitty/kitty.conf" "${REAL_HOME}/.config/kitty/" 2>/dev/null || true
+            sudo chown -R "${REAL_USER}:${REAL_USER}" "${REAL_HOME}/.config/kitty" 2>/dev/null || true
+        fi
+        if command -v fastfetch &>/dev/null; then
+            sudo mkdir -p "${REAL_HOME}/.config/fastfetch" 2>/dev/null || true
+            sudo cp "${CONFIGS_DIR}/fastfetch/config.jsonc" "${REAL_HOME}/.config/fastfetch/" 2>/dev/null || true
+            sudo cp "${CONFIGS_DIR}/fastfetch/logo.txt" "${REAL_HOME}/.config/fastfetch/" 2>/dev/null || true
+            sudo chown -R "${REAL_USER}:${REAL_USER}" "${REAL_HOME}/.config/fastfetch" 2>/dev/null || true
+        fi
+    fi
+}
+THEMESTART
+
+log_success "theme.sh created with all 22 themes and functions"
+
+
+
+
 
 # ================================================================
 # Create modules (aur.sh, configs.sh, gnome.sh, gpu.sh, mirrors.sh, services.sh, fun.sh)
@@ -2215,20 +3463,27 @@ EOF
 log_success "Package lists created (15 categories)"
 
 # ================================================================
-# Select theme
+# Select theme and prompt style
 # ================================================================
+# Default values if not set
+SELECTED_THEME="red-white"
+SELECTED_PROMPT="modern"
+SELECTED_SYMBOL="❯"
 select_theme
-
+select_prompt_style
+select_prompt_symbol
 # ================================================================
 # Apply theme to configs
 # ================================================================
-apply_theme_to_configs "$SELECTED_THEME"
+apply_theme_to_configs "$SELECTED_THEME" "$SELECTED_PROMPT" "$SELECTED_SYMBOL"
 
 # ================================================================
-# Save theme for vex-pkg
+# Save theme and prompt for vex-pkg
 # ================================================================
 echo "$SELECTED_THEME" > "$VEX_ROOT/config/selected_theme"
-log_success "Theme saved for vex-pkg"
+
+echo "$SELECTED_PROMPT" > "$VEX_ROOT/config/selected_prompt"
+log_success "Theme and prompt saved for vex-pkg"
 
 # ================================================================
 # Select configs to install
@@ -2293,10 +3548,12 @@ sudo tee /usr/local/bin/vex-pkg > /dev/null << 'EOF'
 set -Eeuo pipefail
 
 VEX_ROOT="/usr/share/vex"
+
 source "${VEX_ROOT}/lib/core/config.sh" 2>/dev/null || { echo "[!] Core config not found"; exit 1; }
 source "${VEX_ROOT}/lib/core/logging.sh" 2>/dev/null || { echo "[!] Logging not found"; exit 1; }
 source "${VEX_ROOT}/lib/core/utils.sh" 2>/dev/null || { echo "[!] Utils not found"; exit 1; }
 source "${VEX_ROOT}/lib/core/package.sh" 2>/dev/null || { echo "[!] Package not found"; exit 1; }
+source "${VEX_ROOT}/lib/core/theme.sh" 2>/dev/null || { echo "[!] Theme not found"; exit 1; }
 
 ensure_dirs
 
@@ -2364,9 +3621,95 @@ load_theme_colors() {
 
 load_theme_colors
 
-# NOTE: All functions (list_categories, show_category, install_category, etc.)
-# are sourced from package.sh above.
+# ================================================================
+# Change theme function
+# ================================================================
+change_theme() {
+    local theme_name="$1"
+    local prompt_style="${2:-}"
+    
+    if [[ -z "$theme_name" ]]; then
+        log_error "Usage: vex-pkg theme <theme_name> [prompt_style]"
+        log_info "Themes: red-white, cyberpunk, nord, dracula, tokyo-night, catppuccin, gruvbox, solarized, everforest, rose-pine, monokai, one-dark, palenight, synthwave, nord-light, carbon, kanagawa, moonfly, neon-wave, oceanic, midnight, sunset"
+        log_info "Prompt styles: minimal, classic, modern, power, minimalist, doubleline, bracket, arrow, boxed"
+        return 1
+    fi
+    
+    if [[ -z "${THEMES[$theme_name]:-}" ]]; then
+        log_error "Theme '$theme_name' not found"
+        return 1
+    fi
+    
+    if [[ -z "$prompt_style" ]]; then
+        prompt_file="$CONFIGS_DIR/selected_prompt"
+        if [[ -f "$prompt_file" ]]; then
+            prompt_style=$(cat "$prompt_file" 2>/dev/null || echo "modern")
+        else
+            prompt_style="modern"
+        fi
+    fi
+    
+    symbol_file="$CONFIGS_DIR/selected_symbol"
+    if [[ -f "$symbol_file" ]]; then
+        symbol=$(cat "$symbol_file" 2>/dev/null || echo "❯")
+    else
+        symbol="❯"
+    fi
+        # Auto-install fish if needed
+    if ! command -v fish &>/dev/null; then
+        log_warn "Fish not installed. Installing..."
+        pacman -S --needed --noconfirm fish 2>/dev/null || true
+        log_success "Fish installed"
+    fi
 
+    apply_theme_to_configs "$theme_name" "$prompt_style" "$symbol"
+    
+    echo "$theme_name" > "$CONFIGS_DIR/selected_theme"
+    echo "$prompt_style" > "$CONFIGS_DIR/selected_prompt"
+    
+    log_success "Theme changed to: $theme_name (prompt: $prompt_style)"
+    log_info "Restart your shell or run: exec fish"
+}
+
+# ================================================================
+# Change prompt function
+# ================================================================
+change_prompt() {
+    local style="$1"
+    
+    if [[ -z "$style" ]]; then
+        log_error "Usage: vex-pkg prompt <style>"
+        log_info "Styles: minimal, classic, modern, power, minimalist, doubleline, bracket, arrow, boxed"
+        return 1
+    fi
+    
+    theme_file="$CONFIGS_DIR/selected_theme"
+    if [[ -f "$theme_file" ]]; then
+        theme_name=$(cat "$theme_file" 2>/dev/null || echo "red-white")
+    else
+        theme_name="red-white"
+    fi
+    
+    symbol_file="$CONFIGS_DIR/selected_symbol"
+    if [[ -f "$symbol_file" ]]; then
+        symbol=$(cat "$symbol_file" 2>/dev/null || echo "❯")
+    else
+        symbol="❯"
+    fi
+        # Auto-install fish if needed
+    if ! command -v fish &>/dev/null; then
+        log_warn "Fish not installed. Installing..."
+        pacman -S --needed --noconfirm fish 2>/dev/null || true
+        log_success "Fish installed"
+    fi
+
+    apply_theme_to_configs "$theme_name" "$style" "$symbol"
+    
+    echo "$style" > "$CONFIGS_DIR/selected_prompt"
+    
+    log_success "Prompt style changed to: $style"
+    log_info "Restart your shell or run: exec fish"
+}
 show_help() {
     echo ""
     echo -e "${VEX_COLOR_HEADER}╔═══════════════════════════════════════════════════════════════════════╗${NC}"
@@ -2389,6 +3732,8 @@ show_help() {
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}cleanup${NC}                          - Clean package caches           ${VEX_COLOR_HEADER} ║${NC}"
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}install-all${NC}                      - Install all categories         ${VEX_COLOR_HEADER} ║${NC}"
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}install-yay${NC}                      - Install yay (AUR helper)       ${VEX_COLOR_HEADER} ║${NC}"
+    echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}theme <theme> <prompt>${NC}           - Changing Theme(18 themes)      ${VEX_COLOR_HEADER} ║${NC}"
+    echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}prompt <prompt>${NC}                  - Changing prompt style(9 style) ${VEX_COLOR_HEADER} ║${NC}"
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}help${NC}                             - Show this help                 ${VEX_COLOR_HEADER} ║${NC}"
     
     # =============== PENTEST-PRO ===============
@@ -2435,6 +3780,9 @@ show_help() {
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg apply configs${NC}        # Apply Fastfetch, Kitty, Fish  ${VEX_COLOR_HEADER} ║${NC}"
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg apply fun${NC}            # Install fun tools             ${VEX_COLOR_HEADER} ║${NC}"
     echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg doctor${NC}               # Health check                  ${VEX_COLOR_HEADER} ║${NC}"
+    echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg prompt power ${NC}        # Prompt set                    ${VEX_COLOR_HEADER} ║${NC}"
+    echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg theme dracula power${NC}  # Theme  Prompt                 ${VEX_COLOR_HEADER} ║${NC}"
+    echo -e "${VEX_COLOR_HEADER}║${NC}    ${VEX_COLOR_ACCENT}sudo vex-pkg theme dracula ${NC}       # Theme  set                    ${VEX_COLOR_HEADER} ║${NC}"    
     echo -e "${VEX_COLOR_HEADER}╚═══════════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 }
@@ -2481,6 +3829,14 @@ case "${1:-help}" in
     apply)
         require_root "$@"
         apply_module "${2:-}"
+        ;;
+    theme)
+        require_root "$@"
+        change_theme "${2:-}" "${3:-}"
+        ;;
+    prompt)
+        require_root "$@"
+        change_prompt "${2:-}"
         ;;
     doctor)
         cmd_doctor
